@@ -1,0 +1,77 @@
+\documentclass[letterpaper,12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amsfonts,amssymb}
+\usepackage{mathtools}
+\usepackage{algorithm,algpseudocode}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+% \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
+
+\theoremstyle{remark}
+\newtheorem{claim}{Claim}
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\ceiling{\lceil}{\rceil}
+
+\begin{document}
+
+\title{\LaTeX\ Solutions Template}
+\date{\today}
+\author{Author Name}
+\maketitle
+
+\section{Discrete Log Problem}
+
+In this problem we are given $g, y$ and $n$ and we have to find an $x$ such that $g^x \equiv y \pmod n$. We use this $\equiv$ and = alterchangebaly in the report and the meaning is clear from the context.
+
+First notice a few things:
+\begin{enumerate}
+    \item If $g = 0$ or $1$ then all powers $x$ would only produce $0$ and $1$ respectively. We can always output $1$ in this case. Also observe that without loss of generality, $g < n$. So in the rest of the report we will only consider $g \in \{2 \dots n-1\}$. 
+    \item When $n$ is prime, then $y \neq 0$, as $y = 0$ can not have any solution. So in such cases, $y \in [n-1]$ and $x \in [n-1]$. Notice that one can equivalently take the $x \in \{0, \dots n-2\}$ as $g^0 \equiv g^{n-1} \equiv 1 \pmod g$.
+\end{enumerate}
+
+We now describe a few algorithms to solve the discrete log problem. Observe that none of these algorithms are truly polynomial time. No efficient algorithm are known for solving Discrete Log Problem in general setting.
+
+\subsection{Brute Force Algorithm}
+In this algorithm we simply try all possible $x$'s. This takes $O(n)$ time.
+
+\subsection{Baby-Step Giant-Step Algorithm}
+
+This algorithm trades off space to improve the running time over brute force. The idea is to write $x = i\lceil n \rceil + j$ for $0 \le i,j \le \lceil n \rceil$. For simplicity let $m = \lceil n \rceil$. First compute $g^j$ for all $0 \le j \le m$. Then we compute $y\cdot g^{-im}$ for each $0 \le i \le m$. Notice that both can be done in $O(\sqrt n )$ time. If we could find a collision $y\cdot g^{-im} = g^j$, then $x = im + j$. To find this collision efficiently we store all $g^j$ (for all $0 \le j \le m$) by hash-sets and when we compute $y\cdot g^{-im}$ we simply check if that value is already present in the set. This finds the collision in $O(\sqrt{n})$ time (as we need to check if the value is present in the set only $O(\sqrt{n})$ times). Overall this algorithm uses $O(\sqrt{n})$ space and time.
+
+\subsection{Pohlig Hellman algorithm}
+
+Let $g^x = y \pmod n$. Given $g$, $y$ and $n$ where $g$ is the generator $\mathbb{Z}^*_{n}$ we need to find $x$. We are also given the factorization of $n-1$ as,
+\begin{equation*}
+    n-1 = p_1^{e_1} p_2^{e_2} \cdots p_k^{e_k}
+\end{equation*}
+where $p$'s are distinct primes. Notice that $1 \le y \le n-1$ and $0 \le x \le n-2$ (as $g^0 = g^{n-1} = 1$).
+
+The idea of Pohlig Hellman is to first compute $x \pmod {p_i^{e_i}}$ for each $i \in [k]$. As all $p_i^{e_i}$ are mututally coprime we can recover $x \pmod {n-1}$ by Chinese Remainder Theorem. We show how to compute $x \pmod {p_i^{e_i}}$. We now drop the indices from $p_i$ and $e_i$ for simplicity (and refer to them as $p$ and $e$).
+
+Consider the expansion of $x$,
+\begin{equation*}
+    x = \sum_{0 \le i \le e-1} x_i p^i + sp^e
+\end{equation*}
+
+Observe,
+\begin{equation*}
+    y^{\frac{n-1}{p}} \equiv g^{\left(x_0 \frac{n-1}{p} + k(n-1)\right)} \equiv g^{x_0 \frac{n-1}{q}} \pmod n 
+\end{equation*}
+where $k$ is some integer.
+This follows because of $g$ is a generator and so $g^{n-1} \pmod n = 1$. So now we can recover $x_0$ by using Baby-Step Giant-Step algorithm (as $y^{\frac{n-1}{p}}$ is the $x_0$th power of $g^{\frac{n-1}{q}} \pmod n$). 
+
+This idea extends to find $x_i$. Assume that we have computed $x_0 \dots x_{i-1}$. Now we compute, 
+\begin{equation*}
+    y\cdot g^{-(\sum_{0\le j \le i-1} x_j p^j)} = g^{(\sum_{i \le j \le e-1} x_j p^j) + sp^e}
+\end{equation*}
+Call this $y'$. Then notice that (using similar simplification as above),
+\begin{equation*}
+    (y')^{\frac{n-1}{p^{(i+1)}}} \equiv g^{x_i \frac{n-1}{p}} \pmod n 
+\end{equation*}
+Again we use Baby-Step Giant-Step algorithm to compute $x_j$. We continue this to extract each $x_i$ until $x_{e-1}$ using which we create $x \pmod {p^e}$. This algorithm is exactly implemented in the code.
+
+\end{document}
