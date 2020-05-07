@@ -2,10 +2,10 @@ def brute(g, y, n):
     """
     Brute Force to solve Discrete Log
 
-    :param g: g of g^x = y (mod n). g > 1.
-    :param y: y of g^x = y (mod n). Positive integer.
+    :param g: g of g^x = y (mod n). g > 0.
+    :param y: y of g^x = y (mod n). Non-negative integer.
     :param n: n of g^x = y (mod n). n > 1.
-    :returns: x of g^x = y (mod n). If not found returns a TODO.
+    :returns: x of g^x = y (mod n). If not found returns -1.
     """
     # Iterate over all g^i and see if any one matches
     # Start with i = 0

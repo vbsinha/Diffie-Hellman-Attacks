@@ -18,9 +18,9 @@
 
 \begin{document}
 
-\title{\LaTeX\ Solutions Template}
+\title{Brief description of the algorithms}
 \date{\today}
-\author{Author Name}
+\author{Vaibhav Sinha}
 \maketitle
 
 \section{Discrete Log Problem}
@@ -42,6 +42,26 @@ In this algorithm we simply try all possible $x$'s. This takes $O(n)$ time.
 
 This algorithm trades off space to improve the running time over brute force. The idea is to write $x = i\lceil n \rceil + j$ for $0 \le i,j \le \lceil n \rceil$. For simplicity let $m = \lceil n \rceil$. First compute $g^j$ for all $0 \le j \le m$. Then we compute $y\cdot g^{-im}$ for each $0 \le i \le m$. Notice that both can be done in $O(\sqrt n )$ time. If we could find a collision $y\cdot g^{-im} = g^j$, then $x = im + j$. To find this collision efficiently we store all $g^j$ (for all $0 \le j \le m$) by hash-sets and when we compute $y\cdot g^{-im}$ we simply check if that value is already present in the set. This finds the collision in $O(\sqrt{n})$ time (as we need to check if the value is present in the set only $O(\sqrt{n})$ times). Overall this algorithm uses $O(\sqrt{n})$ space and time.
 
+\subsection{Pollard's $\rho$ algorithm}
+
+This is a randomized algorithm that works in $O(\sqrt{n})$ expected time and with $O(1)$ space requirement. We descirbe the algorithm for prime modulus. All the operations described in this section work mod $p$.
+
+The idea is to divide $\{1, \dots n-1\}$, which are the possible $x$s into three sets, say, $S_0, S_1$ and $S_2$ of roughly equal size. In practice we do it by taking $x \pmod 3$ ie. $x \in S_i$, where $i = x \pmod 3$. We do a random walk starting at $x_0 = g^{a_0} y^{b_0}$ where $a_0 = b_0 = 0$. To generate $x_{i+1}$ from $x_i$ we follow the following rule:
+
+\begin{equation*}
+    x_{i+1} = 
+    \begin{dcases}
+        x_i^2 \text{ if } x_i \in S_0 \\
+        yx_i \text{ if } x_i \in S_1 \\
+        gx_i \text{ if } x_i \in S_2
+    \end{dcases}
+\end{equation*}
+
+Corresponding to these $x_i$'s we also maintain the $a_i, b_i$ such that $x_i = g^{a_i} y^{b_i}$. Now suppose we find $i$ and $j$, $i \neq j$, such that $x_i = x_j$, or $g^{a_i} y^{b_i} = g^{a_j} y^{b_j}$. Then $g^{a_i - a_j} = y^{b_j - b_i} \pmod n$. Substituing $y = g^x$, we get the equation $a_i - a_j = x (b_j - b_i)$. We then solve this using a linear congrence solver to obtain $x$.
+
+So all we need to so now is to find $i$ and $j$, $i \neq j$, such that $x_i = x_j$. This is done using the classic Floyd's Hare and Tortoise algorithm (by which the algorithm gets the $\rho$ in its name). Essentially there are two pointers, one that jumps two steps and another that jumps only one. If there are $i$ and $j$, such that $x_i = x_j$, then these pointers would meet at the same point, giving us $i$ and $j$.
+
+
 \subsection{Pohlig Hellman algorithm}
 
 Let $g^x = y \pmod n$. Given $g$, $y$ and $n$ where $g$ is the generator $\mathbb{Z}^*_{n}$ we need to find $x$. We are also given the factorization of $n-1$ as,
@@ -59,10 +79,10 @@ Consider the expansion of $x$,
 
 Observe,
 \begin{equation*}
-    y^{\frac{n-1}{p}} \equiv g^{\left(x_0 \frac{n-1}{p} + k(n-1)\right)} \equiv g^{x_0 \frac{n-1}{q}} \pmod n 
+    y^{\frac{n-1}{p}} \equiv g^{\left(x_0 \frac{n-1}{p} + k(n-1)\right)} \equiv g^{x_0 \frac{n-1}{p}} \pmod n 
 \end{equation*}
 where $k$ is some integer.
-This follows because of $g$ is a generator and so $g^{n-1} \pmod n = 1$. So now we can recover $x_0$ by using Baby-Step Giant-Step algorithm (as $y^{\frac{n-1}{p}}$ is the $x_0$th power of $g^{\frac{n-1}{q}} \pmod n$). 
+This follows because of $g$ is a generator and so $g^{n-1} \pmod n = 1$. So now we can recover $x_0$ by using Baby-Step Giant-Step algorithm (as $y^{\frac{n-1}{p}}$ is the $x_0$th power of $g^{\frac{n-1}{p}} \pmod n$). 
 
 This idea extends to find $x_i$. Assume that we have computed $x_0 \dots x_{i-1}$. Now we compute, 
 \begin{equation*}
@@ -73,5 +93,17 @@ Call this $y'$. Then notice that (using similar simplification as above),
     (y')^{\frac{n-1}{p^{(i+1)}}} \equiv g^{x_i \frac{n-1}{p}} \pmod n 
 \end{equation*}
 Again we use Baby-Step Giant-Step algorithm to compute $x_j$. We continue this to extract each $x_i$ until $x_{e-1}$ using which we create $x \pmod {p^e}$. This algorithm is exactly implemented in the code.
+
+\section{Man in the middle attack on the Diffie-Hellman Protocol}
+
+Assume that there is an attacker Eve who wants to evesdrop on Alice and Bob's conversation or worse even to modify their messages. Here's how Eve attacks using the 'Man In The Middle' attack if Alice and Bob use Diffie-Hellman Protocol.
+
+Eve obtains the public $g$ and $p$, the generator and modulus, that Alice and Bob have decided to use. Now according to protocol Alice chooses $a$ and sends $g^a$ and Bob chooses $b$ and sends $g^b$. Eve herself chooses an $e$ and generates $g^e$. She sends $g^e$ to Alice and Bob claiming that she is Bob and Alice respectively. She receives both Alice and Bob's $g^a$ and $g^b$ which they had sent. 
+
+Now Alice receives $g^e$ and believes that this message is from Bob. So she creates the key $g^{ae}$. Similarly, Bob receives $g^e$ and believes that this message is from Alice. So he creates the key $g^{be}$. Eve computes both $g^{ae}$ and $g^{be}$. Notice now that Eve has both the keys and has Alice and Bob convinced that they are talking to each other. 
+
+Now when Alice sends a message encrypted by the key $g^{ae}$, Eve decrypts it, reads (and possibly modifies) it, reencrypts the message using $g^{be}$ and sends it to Bob who successfully decrypts it. The message recieved is what Eve sent him and not Alice but he believes that the message is from Alice. Eve similarly intercepts messages from Bob to Alice. Thus Alice and Bob think that they are communicating without realizing that there is a `man' in the middle, Eve, who is evesdropping and possibly modifing their messages.
+
+This attack happens because there is no way Alice and Bob can authenticate that they are talking to the persons they think they are. This vulenrability is fixed by using digital signatures (a mechanism for authentication) and other such protocols. 
 
 \end{document}

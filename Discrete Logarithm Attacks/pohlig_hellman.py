@@ -1,8 +1,8 @@
-from bsgs import bsgs
-from mathlib import mod_inverse, chinese_remainder
 from brute_force import brute
-from operator import mul
+from bsgs import bsgs
 from functools import reduce
+from mathlib import mod_inverse, chinese_remainder
+from operator import mul
 
 
 def pohlig_hellman(g: int, y: int, n: int, factors: [int], powers: [int], verify: bool = False) -> int:
@@ -21,6 +21,8 @@ def pohlig_hellman(g: int, y: int, n: int, factors: [int], powers: [int], verify
     :param verify: Does some checks if input is appropriate when True
     :returns: x
     """
+
+    assert pow(g, n-1, n) == 1, "Pohlig Hellman only works for g and n such that g^(n-1) = 1 (mod n)"
 
     # Compute the values (factors[i]^powers[i]) for each i
     mods = [pow(factor, power) for (factor, power) in zip(factors, powers)]
@@ -74,6 +76,10 @@ def __pohlig_hellman_helper(g: int, y: int, n: int, p: int, e: int, verify: bool
             x_j = bsgs(gamma, h, n, p)
         else:
             x_j = brute(gamma, h, n)
+
+        if x_j < 0:
+            print("Either there is no solution x or Pohlig Hellman algorithm fails on this instance")
+            exit()
 
         # Update x by adding x_j * (p^j)
         curr_exp = p_power_j * x_j

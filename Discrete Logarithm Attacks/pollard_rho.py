@@ -1,7 +1,8 @@
-from mathlib import mod_inverse, solve_linear_congurence, is_prime
-from math import gcd
-
 import random
+
+from math import gcd
+from mathlib import mod_inverse, solve_linear_congurence, is_prime
+
 
 def __compute_next(x: int, g: int, y: int, a: int, b: int, p: int, order: int):
     """
@@ -17,7 +18,8 @@ def __compute_next(x: int, g: int, y: int, a: int, b: int, p: int, order: int):
     :returns: x_(i+1), a_(i+1), b_(i+1)
     """
 
-    # The decision of if x belongs to S0, S1 and S2 is done by taking mod 3 
+    # The decision of if x belongs to S0, S1 and S2 is done by taking mod 3
+    # Compute the next x, a and b
     if x % 3 == 0:
         x = (x * x) % p
         a = (2 * a) % order
@@ -40,17 +42,21 @@ def pollard_rho(g: int, y: int, p: int, order: int = 0, tries: int = 10, verify:
     :param p: p of g^x = y (mod p). Prime number.
     :param order: order of g in (mod p). ie. Smallest i such that g^i = 1 (mod p). Positive integer.
     :param tries: number of tries to run algorithm with varying starting points (a and b). Positive integer.
+    :param verify: Checks if p is prime when True
     :returns: A non-negative integer x such that g^x = y (mod p) 
-              or negative integer if the algorithm failed to find any such x 
+              or -1 if the algorithm failed to find any such x 
     """
 
     if verify:
         assert is_prime(p), "Pollard-rho works for prime p"
+    else:
+        print("BSGS running assuming passed n is prime. If not, answer may be wrong.")
     
     # Use order p-1 if no order is provided
     # g^(p-1) = 1 (mod p) for any prime p
     # But if the original order < (p-1) then the solution returned might not be the smallest one
     if order == 0 or order is None:
+        print("WARNING: Order has not been provided to Pollard Rho, answer might not be the smallest one.")
         order = p-1
 
     # Handle special case
@@ -82,7 +88,7 @@ def pollard_rho(g: int, y: int, p: int, order: int = 0, tries: int = 10, verify:
 
                 # Algorithm failed in this try
                 if beta == 0:
-                    return -2
+                    return -1
 
                 # We need to solve beta * x = alpha (mod order)
                 xs = solve_linear_congurence(beta, alpha, order)
