@@ -5,6 +5,8 @@ from bsgs import bsgs
 from pohlig_hellman import pohlig_hellman
 from pollard_rho import pollard_rho
 
+# Some tests have been adopted from https://github.com/ashutosh1206/Crypton/
+
 class TestBrute(unittest.TestCase):
     def test_brute(self):
         # Powers of 2 mod 11
@@ -31,7 +33,6 @@ class TestBSGS(unittest.TestCase):
             self.assertEqual(pow(3, bsgs(3, i, 11, verify=True), 11), i)
 
         # This test takes a long time to run
-        # Example adopted from https://github.com/ashutosh1206/Crypton/
         p = 0xfffffed83c17 # 48 bit prime
         # self.assertEqual(pow(5, bsgs(5, 230152795807443, p), p), 230152795807443)
 

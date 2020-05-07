@@ -50,7 +50,7 @@ def pollard_rho(g: int, y: int, p: int, order: int = 0, tries: int = 10, verify:
     if verify:
         assert is_prime(p), "Pollard-rho works for prime p"
     else:
-        print("BSGS running assuming passed n is prime. If not, answer may be wrong.")
+        print("WARNING: Pollard-rho running assuming passed n is prime. If not, answer may be wrong.")
     
     # Use order p-1 if no order is provided
     # g^(p-1) = 1 (mod p) for any prime p

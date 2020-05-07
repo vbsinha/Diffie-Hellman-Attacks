@@ -33,7 +33,7 @@ First notice a few things:
     \item When $n$ is prime, then $y \neq 0$, as $y = 0$ can not have any solution. So in such cases, $y \in [n-1]$ and $x \in [n-1]$. Notice that one can equivalently take the $x \in \{0, \dots n-2\}$ as $g^0 \equiv g^{n-1} \equiv 1 \pmod g$.
 \end{enumerate}
 
-We now describe a few algorithms to solve the discrete log problem. Observe that none of these algorithms are truly polynomial time. No efficient algorithm are known for solving Discrete Log Problem in general setting.
+We now describe a few algorithms to solve the discrete log problem. Observe that none of these algorithms are truly polynomial time. No efficient algorithm are known for solving Discrete Log Problem in general setting. We implement these algorithms (and some of these only work) modulo a prime as Diffie-Hellman uses a prime modulus.
 
 \subsection{Brute Force Algorithm}
 In this algorithm we simply try all possible $x$'s. This takes $O(n)$ time.
@@ -96,14 +96,14 @@ Again we use Baby-Step Giant-Step algorithm to compute $x_j$. We continue this t
 
 \section{Man in the middle attack on the Diffie-Hellman Protocol}
 
-Assume that there is an attacker Eve who wants to evesdrop on Alice and Bob's conversation or worse even to modify their messages. Here's how Eve attacks using the 'Man In The Middle' attack if Alice and Bob use Diffie-Hellman Protocol.
+Assume that there is an attacker Eve who wants to evesdrop on Alice and Bob's conversation or worse even to modify their messages. Here's how Eve attacks using the `Man In The Middle' attack if Alice and Bob use Diffie-Hellman Protocol.
 
 Eve obtains the public $g$ and $p$, the generator and modulus, that Alice and Bob have decided to use. Now according to protocol Alice chooses $a$ and sends $g^a$ and Bob chooses $b$ and sends $g^b$. Eve herself chooses an $e$ and generates $g^e$. She sends $g^e$ to Alice and Bob claiming that she is Bob and Alice respectively. She receives both Alice and Bob's $g^a$ and $g^b$ which they had sent. 
 
 Now Alice receives $g^e$ and believes that this message is from Bob. So she creates the key $g^{ae}$. Similarly, Bob receives $g^e$ and believes that this message is from Alice. So he creates the key $g^{be}$. Eve computes both $g^{ae}$ and $g^{be}$. Notice now that Eve has both the keys and has Alice and Bob convinced that they are talking to each other. 
 
-Now when Alice sends a message encrypted by the key $g^{ae}$, Eve decrypts it, reads (and possibly modifies) it, reencrypts the message using $g^{be}$ and sends it to Bob who successfully decrypts it. The message recieved is what Eve sent him and not Alice but he believes that the message is from Alice. Eve similarly intercepts messages from Bob to Alice. Thus Alice and Bob think that they are communicating without realizing that there is a `man' in the middle, Eve, who is evesdropping and possibly modifing their messages.
+Now when Alice sends a message encrypted by the key $g^{ae}$, Eve decrypts it, reads (and possibly modifies) it, reencrypts the message using $g^{be}$ and sends it to Bob who successfully decrypts it. The message recieved is what Eve sent him and not Alice but Bob believes that the message is from Alice. Eve similarly intercepts messages from Bob to Alice. Thus Alice and Bob think that they are communicating with each other without realizing that there is a `man' in the middle, Eve, who is evesdropping and possibly modifing their messages.
 
-This attack happens because there is no way Alice and Bob can authenticate that they are talking to the persons they think they are. This vulenrability is fixed by using digital signatures (a mechanism for authentication) and other such protocols. 
+This attack happens because there is no way for Alice and Bob to authenticate that they are talking to the persons they think they are. This vulenrability is fixed by using digital signatures (a mechanism for authentication) and other such protocols. 
 
 \end{document}
